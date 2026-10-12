@@ -1,0 +1,8 @@
+{
+  "name": "holdem-online",
+  "version": "1.0.0",
+  "private": true,
+  "description": "친구와 함께하는 텍사스 홀덤 (방 코드 · AI 자리 채우기)",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}
