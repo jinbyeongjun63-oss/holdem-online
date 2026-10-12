@@ -261,18 +261,26 @@ summary{cursor:pointer;font:600 12px var(--f-body);letter-spacing:.14em;color:va
 .aitoggle[aria-checked="true"] b{background:var(--brass);color:var(--ink)}
 .aitoggle:disabled{opacity:.75;cursor:default}
 
-/* 채팅 */
+/* 채팅: 족보 보기 아래에 항상 보이는 패널 (좁은 화면에서는 버튼으로 아래서 올라오는 창도 가능) */
 #chatBadge{display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;border-radius:9px;background:var(--chip);color:#fff;font:700 11px/18px var(--f-body);text-align:center}
-.chat{position:fixed;z-index:40;left:0;right:0;bottom:0;margin:0 auto;max-width:520px;height:min(62vh,480px);background:var(--bg2);border:1px solid var(--brass-dim);border-bottom:0;border-radius:16px 16px 0 0;display:grid;grid-template-rows:auto 1fr auto;box-shadow:0 -10px 40px rgba(0,0,0,.5)}
-.chat-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);color:var(--ivory)}
-.chat-list{list-style:none;margin:0;padding:10px 12px;overflow:auto;display:flex;flex-direction:column;gap:6px}
-.chat-list li{max-width:82%;padding:7px 11px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-size:14px;line-height:1.35;overflow-wrap:anywhere;align-self:flex-start}
+.chat{display:grid;grid-template-rows:auto auto auto;padding:0;overflow:hidden}
+.chat-head{display:flex;justify-content:space-between;align-items:center;min-height:42px;padding:8px 14px;border-bottom:1px solid var(--line);color:var(--ivory)}
+.chat-head b{font:600 12px var(--f-body);letter-spacing:.14em;color:var(--muted)}
+#chatClose{display:none}
+.chat-list{list-style:none;margin:0;padding:10px 12px;height:230px;overflow:auto;display:flex;flex-direction:column;gap:6px}
+.chat-list li{max-width:86%;padding:7px 11px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-size:14px;line-height:1.35;overflow-wrap:anywhere;align-self:flex-start}
 .chat-list li b{display:block;font-size:11px;color:var(--muted);font-weight:600;margin-bottom:1px}
 .chat-list li.me{align-self:flex-end;background:var(--brass);border-color:var(--brass);color:var(--ink)}
 .chat-list li.me b{display:none}
-.chat-form{display:grid;grid-template-columns:1fr 84px;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
-.chat-form input{min-height:46px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ivory);font:500 16px var(--f-body);padding:0 12px;min-width:0}
+.chat-form{display:grid;grid-template-columns:minmax(0,1fr) 78px;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
+.chat-form input{min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ivory);font:500 16px var(--f-body);padding:0 12px;min-width:0}
 .chat-form input:focus{outline:2px solid var(--brass-dim)}
+.chat-form .btn{min-height:44px}
+.chat.sheet{position:fixed;z-index:40;left:0;right:0;bottom:0;margin:0 auto;max-width:520px;height:min(62vh,480px);border-radius:16px 16px 0 0;border-bottom:0;grid-template-rows:auto 1fr auto;box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+.chat.sheet .chat-list{height:auto}
+.chat.sheet #chatClose{display:inline-block}
+.chat.sheet .chat-form{padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+@media (min-width:960px){#chatBtn{display:none!important}.chat-list{height:250px}}
 </style>
 </head>
 <body>
@@ -326,6 +334,11 @@ summary{cursor:pointer;font:600 12px var(--f-body);letter-spacing:.14em;color:va
         </ol>
         <p>내 카드 2장과 공용 카드 5장 중 가장 좋은 5장으로 겨룹니다. 6핸드마다 블라인드가 올라가요. 단축키: F 폴드 · C 체크/콜 · R 레이즈 · ↑↓ 금액 ±5 · N 다음 핸드/건너뛰기</p>
       </details>
+      <section class="panel chat" id="chat" aria-label="채팅" hidden>
+        <div class="chat-head"><b>채팅</b><button class="ghost" id="chatClose" type="button">닫기</button></div>
+        <ol class="chat-list" id="chatList"></ol>
+        <form class="chat-form" id="chatForm"><input id="chatIn" maxlength="200" autocomplete="off" enterkeyhint="send" placeholder="메시지 입력" aria-label="채팅 메시지"><button class="btn call" type="submit">보내기</button></form>
+      </section>
     </aside>
   </main>
 
@@ -364,12 +377,6 @@ summary{cursor:pointer;font:600 12px var(--f-body);letter-spacing:.14em;color:va
     <p id="endText"></p>
     <button class="btn next" id="again" type="button">다시 시작</button>
   </div>
-</div>
-
-<div class="chat" id="chat" hidden>
-  <div class="chat-head"><b>채팅</b><button class="ghost" id="chatClose" type="button">닫기</button></div>
-  <ol class="chat-list" id="chatList"></ol>
-  <form class="chat-form" id="chatForm"><input id="chatIn" maxlength="200" autocomplete="off" enterkeyhint="send" placeholder="메시지 입력" aria-label="채팅 메시지"><button class="btn call" type="submit">보내기</button></form>
 </div>
 
 <div class="overlay" id="menu" hidden>
@@ -1502,6 +1509,7 @@ function connectMP(sess){
   MP=true;
   mp={code:sess.code,token:sess.token,lastLog:0,lastChat:0,annHand:0,waiting:0,es:null};
   $('#chatBtn').hidden=false;
+  $('#chat').hidden=false;
   try{localStorage.setItem(MPKEY,JSON.stringify({code:sess.code,token:sess.token}));}catch(e){}
   $('#speed').hidden=true;
   $('#restart').textContent='나가기';
@@ -1524,10 +1532,11 @@ function connectMP(sess){
 
 /* ===== 채팅 ===== */
 let chatUnread=0;
-function chatOpen(){return !$('#chat').hidden;}
+function chatOpen(){return $('#chat').classList.contains('sheet');}
 function chatShow(on){
-  $('#chat').hidden=!on;
-  if(on){chatUnread=0;chatBadge();const l=$('#chatList');l.scrollTop=l.scrollHeight;setTimeout(()=>$('#chatIn').focus(),30);}
+  $('#chat').classList.toggle('sheet',on);
+  if(on){chatUnread=0;chatBadge();setTimeout(()=>{const l=$('#chatList');l.scrollTop=l.scrollHeight;$('#chatIn').focus();},30);}
+  else{const l=$('#chatList');l.scrollTop=l.scrollHeight;}
 }
 function chatBadge(){
   const b=$('#chatBadge');
@@ -1544,7 +1553,7 @@ function chatAdd(name,text,mine,quiet){
   l.appendChild(li);
   while(l.children.length>100)l.removeChild(l.firstChild);
   l.scrollTop=l.scrollHeight;
-  if(!mine&&!quiet&&!chatOpen()){chatUnread++;chatBadge();}
+  if(!mine&&!quiet&&!chatOpen()&&!window.matchMedia('(min-width:960px)').matches){chatUnread++;chatBadge();}
 }
 function onChat(m){
   if(!m.chat)return;
